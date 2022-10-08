@@ -10,8 +10,8 @@
 import Vue from "vue";
 import Router from "vue-router";
 
-const Home = (resolve) => require(["@/components/Home"], resolve);
-const About = (resolve) => require(["@/components/about/index"], resolve);
+const Home = (resolve) => require(["@/App"], resolve);
+// const About = (resolve) => require(["@/components/about/index"], resolve);
 
 Vue.use(Router);
 
@@ -24,20 +24,20 @@ let router = new Router({
       name: "Home",
       menuShow: false,
     },
-    {
-      path: "/home",
-      component: Home,
-      name: "Home",
-      menuShow: false,
-      children: [
-        {
-          path: "/about",
-          component: About,
-          name: "About",
-          menuShow: false,
-        },
-      ],
-    },
+    // {
+    //   path: "/home",
+    //   component: Home,
+    //   name: "Home",
+    //   menuShow: false,
+    //   children: [
+    //     {
+    //       path: "/about",
+    //       component: About,
+    //       name: "About",
+    //       menuShow: false,
+    //     },
+    //   ],
+    // },
   ],
 });
 
