@@ -1,5 +1,6 @@
 <template>
   <div class="upload-img-root">
+    {{docs}}
     <el-select v-show="connected" v-model="selectedSymbol" class="m-2" placeholder="Select" size="large">
       <el-option
         v-for="symbol in symbols"
@@ -41,6 +42,18 @@ import Everpay from 'everpay'
 import { getBundleFee, getOrders } from 'arseeding-js'
 import Bignumber from 'bignumber.js'
 import {createAndSubmitItem} from "arseeding-js/cjs/submitOrder";
+
+import axios from 'axios';
+
+// TODO: optimize here.
+const faasAxios = axios.create({
+  // baseURL: "http://localhost:4000/", // local
+  baseURL: 'https://faasbyleeduckgo.gigalixirapp.com', // online
+  headers: {
+    'Content-Type': 'application/json;charset=UTF-8',
+  },
+});
+
 // import {payOrder} from "arseeding-js/cjs/payOrder";
 function  getArseedUrl() {
   let arseedUrl = "https://arseed.web3infra.dev"
@@ -65,7 +78,8 @@ export default {
       balance: '',
       orders: [],
       balanceStack: {},
-      arseedUrl: getArseedUrl()
+      arseedUrl: getArseedUrl(),
+      docs: {},
     };
   },
   watch: {
@@ -81,6 +95,18 @@ export default {
     }
   },
   methods: {
+    runFunc(data){
+        faasAxios.post(
+          '/api/v1/run?name=PermaLife&func_name=get_life',
+          data,
+        ).then(
+          value => 
+          {
+            console.log(value.data);
+            this.docs = value.data;
+          }
+        );
+    },
     handleChangeFileSuccess(file, fileList) {
       this.combineFileList(fileList);
     },
@@ -159,6 +185,7 @@ export default {
       this.selectedSymbol = this.symbols[0]
     })
 
+    this.runFunc({ params: [] });
     this.pubId = pubsub.subscribe('connected',async (msgName,data)=>{
       this.connected = true
       this.instance = data
