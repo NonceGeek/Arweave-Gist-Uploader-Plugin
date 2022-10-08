@@ -1,21 +1,23 @@
 <template>
   <div id="app">
     <ConnectWallet></ConnectWallet>
-    <Upload></upload>
+    <Upload></Upload>
+
+    <router-view></router-view>
   </div>
 </template>
 
 <script>
-import Upload from './components/Upload.vue'
-import ConnectWallet from './components/ConnectWallet'
+import Upload from "./components/Upload.vue";
+import ConnectWallet from "./components/ConnectWallet";
 
 export default {
-  name: 'App',
+  name: "App",
   components: {
     Upload,
-    ConnectWallet
-  }
-}
+    ConnectWallet,
+  },
+};
 </script>
 
 <style>
