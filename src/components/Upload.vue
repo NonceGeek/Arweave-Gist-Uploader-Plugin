@@ -73,6 +73,7 @@ export default {
       balanceStack: {},
       arseedUrl: getArseedUrl(),
       payload: {},
+      url: ""
     };
   },
   watch: {
@@ -90,15 +91,21 @@ export default {
   methods: {
     runFunc(){
         let id = this.$route.query.id;
+        let type = this.$route.query.type;
+        if(type=="life"){
+          this.url = '/api/v1/run?name=PermaLife&func_name=get_life'
+        }else{
+          this.url = '/api/v1/run?name=PermaLife.Role&func_name=get_role'
+        }
         console.log("query id is"+JSON.stringify(this.$route.query.id));
         faasAxios.post(
-          '/api/v1/run?name=PermaLife&func_name=get_life',
+          this.url,
           {params: [id]},
         ).then(
           value => 
           {
             console.log(value.data);
-            this.payload = value.data;
+            this.payload = value.data.result;
           }
         );
     },
