@@ -175,7 +175,7 @@ export default {
         const ops = {
           tags: [{name: "Content-Type",value: "application/json"}]
         }
-        const res = await this.instance.sendAndPay(this.arseedUrl, this.payload, this.selectedSymbol, ops)
+        const res = await this.instance.sendAndPay(this.arseedUrl, Buffer.from(JSON.stringify(this.payload)), this.selectedSymbol, ops)
         console.log(res)
 
         // // ----------- for test bug----------------
