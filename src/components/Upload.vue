@@ -1,6 +1,5 @@
 <template>
   <div class="upload-img-root">
-    {{docs}}
     <el-select v-show="connected" v-model="selectedSymbol" class="m-2" placeholder="Select" size="large">
       <el-option
         v-for="symbol in symbols"
@@ -24,6 +23,15 @@
       <i class="el-icon-upload"/>
       <div class="el-upload__text">Drag the file here，or<em style="color: #031425;"> Click to upload</em></div>
     </el-upload>
+    <br><br>
+    <a href="https://app.everpay.io/deposit">Go to deposit by EverPay</a>
+    <br><br>
+    <b>payload that waiting for upload:</b>
+    <br><br>
+    {{payload}}
+    <br>
+    <button v-on:click="upload_payload()">Click to Upload</button>
+
     <div>
       <ul>
         <li v-for="(order, index) in orders" :key="index">
@@ -47,7 +55,7 @@ import axios from 'axios';
 
 // TODO: optimize here.
 const faasAxios = axios.create({
-  // baseURL: "http://localhost:4000/", // local
+  //baseURL: "http://localhost:4000/", // local
   baseURL: 'https://faasbyleeduckgo.gigalixirapp.com', // online
   headers: {
     'Content-Type': 'application/json;charset=UTF-8',
@@ -79,7 +87,7 @@ export default {
       orders: [],
       balanceStack: {},
       arseedUrl: getArseedUrl(),
-      docs: {},
+      payload: {},
     };
   },
   watch: {
@@ -95,28 +103,31 @@ export default {
     }
   },
   methods: {
-    runFunc(data){
+    runFunc(){
+        let id = this.$route.query.id;
+        console.log("query id is"+JSON.stringify(this.$route.query.id));
         faasAxios.post(
           '/api/v1/run?name=PermaLife&func_name=get_life',
-          data,
+          {params: [id]},
         ).then(
           value => 
           {
             console.log(value.data);
-            this.docs = value.data;
+            this.payload = value.data;
           }
         );
     },
-    handleChangeFileSuccess(file, fileList) {
+       handleChangeFileSuccess(file, fileList) {
       this.combineFileList(fileList);
     },
     handleAvatarSuccess(res, file, fileList) {
       this.combineFileList(fileList);
     },
+    // Test url: http://localhost:8082/#/?id=e1cdbb915f18bcd0
+    // TODO: change this to upload_payload
     async combineFileList(files) {
       const file = files[files.length - 1]
       console.log('file.size', file.size)
-
       const fee = await getBundleFee(this.arseedUrl, file.size, this.selectedSymbol)
       const formatedFee = new Bignumber(fee.finalFee).dividedBy(new Bignumber(10).pow(fee.decimals)).toString()
       if (+this.balance >= +formatedFee) {
@@ -129,7 +140,6 @@ export default {
           }
           const res = await this.instance.sendAndPay(this.arseedUrl, data, this.selectedSymbol, ops)
           console.log(res)
-
           // ----------- for test bug----------------
           const cfg =  {
             signer: this.instance.signer,
@@ -151,6 +161,43 @@ export default {
           this.submitResp = JSON.stringify(res)
           this.getOrders()
         }
+      } else {
+        alert(`need ${formatedFee} ${this.selectedSymbol} to upload`)
+      }
+    },
+    async upload_payload() {
+
+      const fee = await getBundleFee(this.arseedUrl, JSON.stringify(this.payload).length, this.selectedSymbol)
+      const formatedFee = new Bignumber(fee.finalFee).dividedBy(new Bignumber(10).pow(fee.decimals)).toString()
+      if (+this.balance >= +formatedFee) {
+        // const reader = new FileReader();
+        // const data = reader.result
+        const ops = {
+          tags: [{name: "Content-Type",value: "application/json"}]
+        }
+        const res = await this.instance.sendAndPay(this.arseedUrl, this.payload, this.selectedSymbol, ops)
+        console.log(res)
+
+        // // ----------- for test bug----------------
+        // const cfg =  {
+        //   signer: this.instance.signer,
+        //   path:"",
+        //   arseedUrl: 'https://arseed.web3infra.dev',
+        //   currency: 'AR'
+        // }
+        // const ords = await createAndSubmitItem(this.payload,ops,cfg)
+        // console.log('oooood',ords)
+        // // const pay = new Everpay({
+        // //   account: this.instance.signer.address,
+        // //   chainType: 'ethereum' as any,
+        // //   ethConnectedSigner: this.instance.signer
+        // // })
+        // //
+        // // const tx = await payOrder(pay,ords)
+        // // console.log('tttxxx',tx)
+        // // ----------------------------
+        // this.submitResp = JSON.stringify(res)
+        // this.getOrders()
       } else {
         alert(`need ${formatedFee} ${this.selectedSymbol} to upload`)
       }

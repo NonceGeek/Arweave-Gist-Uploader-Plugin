@@ -10,7 +10,7 @@
 import Vue from "vue";
 import Router from "vue-router";
 
-const Home = (resolve) => require(["@/App"], resolve);
+// const App = (resolve) => require(["@/App"], resolve);
 // const About = (resolve) => require(["@/components/about/index"], resolve);
 
 Vue.use(Router);
@@ -18,12 +18,12 @@ Vue.use(Router);
 let router = new Router({
   mode: "hash",
   routes: [
-    {
-      path: "/",
-      component: Home,
-      name: "Home",
-      menuShow: false,
-    },
+    // {
+    //   path: "/",
+    //   component: App,
+    //   name: "App",
+    //   menuShow: false,
+    // },
     // {
     //   path: "/home",
     //   component: Home,
