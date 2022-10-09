@@ -9,20 +9,6 @@
       />
     </el-select>
     <span v-if="connected">{{balance}}</span>
-    <el-upload v-show="connected"
-        :file-list="fileList"
-        :show-file-list="false"
-        :auto-upload="false"
-        :on-change="handleChangeFileSuccess"
-        :on-success="handleAvatarSuccess"
-        drag
-        multiple
-        action="#"
-        class="avatar-uploader"
-    >
-      <i class="el-icon-upload"/>
-      <div class="el-upload__text">Drag the file here，or<em style="color: #031425;"> Click to upload</em></div>
-    </el-upload>
     <br><br>
     <a href="https://app.everpay.io/deposit">Go to deposit by EverPay</a>
     <br><br>
@@ -49,7 +35,6 @@ import pubsub from 'pubsub-js'
 import Everpay from 'everpay'
 import { getBundleFee, getOrders } from 'arseeding-js'
 import Bignumber from 'bignumber.js'
-import {createAndSubmitItem} from "arseeding-js/cjs/submitOrder";
 
 import axios from 'axios';
 
@@ -117,54 +102,6 @@ export default {
           }
         );
     },
-       handleChangeFileSuccess(file, fileList) {
-      this.combineFileList(fileList);
-    },
-    handleAvatarSuccess(res, file, fileList) {
-      this.combineFileList(fileList);
-    },
-    // Test url: http://localhost:8082/#/?id=e1cdbb915f18bcd0
-    // TODO: change this to upload_payload
-    async combineFileList(files) {
-      const file = files[files.length - 1]
-      console.log('file.size', file.size)
-      const fee = await getBundleFee(this.arseedUrl, file.size, this.selectedSymbol)
-      const formatedFee = new Bignumber(fee.finalFee).dividedBy(new Bignumber(10).pow(fee.decimals)).toString()
-      if (+this.balance >= +formatedFee) {
-        const reader = new FileReader();
-        reader.readAsArrayBuffer(file.raw);
-        reader.onload= async ()=> {
-          const data = reader.result
-          const ops = {
-            tags: [{name: "FileName", value:file.name},{name: "Content-Type",value:file.raw.type}]
-          }
-          const res = await this.instance.sendAndPay(this.arseedUrl, data, this.selectedSymbol, ops)
-          console.log(res)
-          // ----------- for test bug----------------
-          const cfg =  {
-            signer: this.instance.signer,
-            path:"",
-            arseedUrl: 'https://arseed.web3infra.dev',
-            currency: 'AR'
-          }
-          const ords = await createAndSubmitItem(data,ops,cfg)
-          console.log('oooood',ords)
-          // const pay = new Everpay({
-          //   account: this.instance.signer.address,
-          //   chainType: 'ethereum' as any,
-          //   ethConnectedSigner: this.instance.signer
-          // })
-          //
-          // const tx = await payOrder(pay,ords)
-          // console.log('tttxxx',tx)
-          // ----------------------------
-          this.submitResp = JSON.stringify(res)
-          this.getOrders()
-        }
-      } else {
-        alert(`need ${formatedFee} ${this.selectedSymbol} to upload`)
-      }
-    },
     async upload_payload() {
 
       const fee = await getBundleFee(this.arseedUrl, JSON.stringify(this.payload).length, this.selectedSymbol)
@@ -173,7 +110,7 @@ export default {
         // const reader = new FileReader();
         // const data = reader.result
         const ops = {
-          tags: [{name: "Content-Type",value: "application/json"}]
+          tags: [{name: "Operator",value: "ethereum/" + window.ethereum.selectedAddress}, {name: "Content-Type",value: "application/json"}]
         }
         const res = await this.instance.sendAndPay(this.arseedUrl, Buffer.from(JSON.stringify(this.payload)), this.selectedSymbol, ops)
         console.log(res)
