@@ -113,7 +113,7 @@ export default {
           tags: [
             {name: "Operator",value: "ethereum/" + window.ethereum.selectedAddress}, 
             {name: "Content-Type",value: "application/json"},
-            {name: "App-Name",value: "PermaLife"}
+            {name: "AppName",value: "PermaLife"}
           ]
         }
         const res = await this.instance.sendAndPay(this.arseedUrl, Buffer.from(JSON.stringify(this.payload)), this.selectedSymbol, ops)
