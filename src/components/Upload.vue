@@ -110,7 +110,11 @@ export default {
         // const reader = new FileReader();
         // const data = reader.result
         const ops = {
-          tags: [{name: "Operator",value: "ethereum/" + window.ethereum.selectedAddress}, {name: "Content-Type",value: "application/json"}]
+          tags: [
+            {name: "Operator",value: "ethereum/" + window.ethereum.selectedAddress}, 
+            {name: "Content-Type",value: "application/json"},
+            {name: "App-Name",value: "PermaLife"}
+          ]
         }
         const res = await this.instance.sendAndPay(this.arseedUrl, Buffer.from(JSON.stringify(this.payload)), this.selectedSymbol, ops)
         console.log(res)
