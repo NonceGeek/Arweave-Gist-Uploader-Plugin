@@ -2,7 +2,8 @@
 
 Upload the code in the Gist to the Arweave Network to make it perma. It can be use in the [FaaS](https://faas.noncegeek.com) and other interesting scenes.
 
-> FaaS:
+> FaaS Repo:
+> 
 > https://github.com/NonceGeek/tai_shang_micro_faas_system
 
 ## Project setup
