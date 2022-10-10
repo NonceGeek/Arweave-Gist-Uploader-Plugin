@@ -1,31 +1,55 @@
 <template>
   <div class="upload-img-root">
-    <el-select v-show="connected" v-model="selectedSymbol" class="m-2" placeholder="Select" size="large">
-      <el-option
-        v-for="symbol in symbols"
-        :key="symbol"
-        :label="`${symbol} ${balanceStack[symbol]}`"
-        :value="symbol"
-      />
-    </el-select>
-    <span v-if="connected">{{balance}}</span>
-    <br><br>
-    <a href="https://app.everpay.io/deposit">Go to deposit by EverPay</a>
-    <br><br>
-    <b>payload that waiting for upload:</b>
-    <div>
-      <input v-model="gistId" placeholder="Input gist id">
-    </div>
-    <button @click="upload_payload()">Click to Upload Your Gists</button>
-    <div>
-      <ul>
-        <li v-for="(order, index) in orders" :key="index">
-          <a style="margin-right:10px;" target="_blank" :href="`${arseedUrl}/${order.itemId}`">{{order.itemId}}</a>
-          <a target="_blank" :href="`https://arweave.net/${order.itemId}`">By arweave gateway(when onChainStatus pending or success)</a>
-          <div>{{JSON.stringify(order, null, 2)}}</div>
-        </li>
-      </ul>
-    </div>
+    <el-row class="row">
+      <el-col :span="8" :offset="8">
+        <el-select v-show="connected" v-model="selectedSymbol" class="m-2" placeholder="Select" size="large">
+          <el-option
+            v-for="symbol in symbols"
+            :key="symbol"
+            :label="`${symbol} ${balanceStack[symbol]}`"
+            :value="symbol"
+          />
+        </el-select>
+      </el-col>
+    </el-row>
+    <el-row class="row">
+      <span v-if="connected">Balance: {{balance}}</span>
+    </el-row>
+    <el-row class="row">
+      <a href="https://app.everpay.io/deposit">Go to deposit by EverPay</a>
+    </el-row>
+    <el-row class="row">
+      <el-col :span="4" :offset="10">
+        <el-input v-model="gistId" placeholder="Input gist id" />
+      </el-col>
+    </el-row>
+    <el-row class="row">
+      <el-button type="primary" @click="upload_payload()">Click to Upload Your Gists</el-button>
+    </el-row>
+    <el-row class="row">
+      <el-col :span="8" :offset="10">
+        <div
+          v-for="(order, index) in orders"
+          :key="index"
+          class="order"
+        >
+          <!-- <a style="margin-right:10px;" target="_blank" :href="`${arseedUrl}/${order.itemId}`">{{order.itemId}}</a> -->
+          <el-button
+            type="primary"
+            plain
+            @click="copyTextToClipboard(`${arseedUrl}/${order.itemId}`)"
+          >Copy Link of Source Code</el-button>
+          <el-button
+            class="view"
+            type="success"
+            plain
+            @click="viewItem(`${arseedUrl}/${order.itemId}`)"
+          >View Item</el-button>
+          <!-- <a target="_blank" :href="`https://arweave.net/${order.itemId}`">By arweave gateway(when onChainStatus pending or success)</a> -->
+          <!-- <div>{{JSON.stringify(order, null, 2)}}</div> -->
+        </div>
+      </el-col>
+    </el-row>
   </div>
 </template>
 
@@ -178,6 +202,23 @@ export default {
       this.gistOwnerId = result.data.history[0].user.id.toString()
       this.payload = Buffer.from(JSON.stringify(result.data))
     },
+    viewItem (url) {
+      window.open(url, '_blank').focus()
+    },
+    copyTextToClipboard(text) {
+      navigator.clipboard.writeText(text).then(
+        () => {
+          /* clipboard successfully set */
+          this.$message({
+            message:'Link copied',
+            type: 'success'
+          })
+        },
+        () => {
+          /* clipboard write failed */
+        }
+      );
+    },
   },
   mounted() {
     this.everpay = new Everpay()
@@ -202,3 +243,20 @@ export default {
   },
 };
 </script>
+
+<style scoped>
+.row {
+  margin-top: 20px;
+}
+
+.order {
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.order .view {
+  margin-left: 10px;
+}
+</style>

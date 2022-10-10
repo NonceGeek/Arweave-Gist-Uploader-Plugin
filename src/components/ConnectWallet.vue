@@ -1,8 +1,12 @@
 <template>
-  <div>
+  <el-row>
     <h1>{{signerAddr}}</h1>
-    <button class="btn btn-danger" @click="connectWallet" v-show="!connected">connectWallet</button>
-  </div>
+    <el-button
+      type="primary"
+      @click="connectWallet"
+      v-show="!connected"
+    >Connect Wallet</el-button>
+  </el-row>
 </template>
 
 
