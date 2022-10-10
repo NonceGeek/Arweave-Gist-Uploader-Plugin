@@ -9,7 +9,6 @@
     "lint": "vue-cli-service lint"
   },
   "dependencies": {
-    "@octokit/core": "^4.0.5",
     "arseeding-js": "^0.0.16",
     "bignumber.js": "^9.0.2",
     "core-js": "^3.6.5",

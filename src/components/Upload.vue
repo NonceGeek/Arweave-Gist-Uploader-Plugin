@@ -17,7 +17,6 @@
       <input v-model="gistId" placeholder="Input gist id">
     </div>
     <button @click="upload_payload()">Click to Upload Your Gists</button>
-
     <div>
       <ul>
         <li v-for="(order, index) in orders" :key="index">
@@ -37,7 +36,6 @@ import { getBundleFee, getOrders } from 'arseeding-js'
 import Bignumber from 'bignumber.js'
 
 import axios from 'axios';
-import { Octokit } from "@octokit/core";
 
 // TODO: optimize here.
 const faasAxios = axios.create({
@@ -74,7 +72,6 @@ export default {
       arseedUrl: getArseedUrl(),
       payload: {},
       url: "",
-      pat: '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',
       gistId: '',
       gistOwnerId: '',
     };
@@ -118,7 +115,7 @@ export default {
       if (+this.balance >= +formatedFee) {
         // const reader = new FileReader();
         // const data = reader.result
-        await this.getGists()
+        await this.getGistContent()
         const ops = {
           tags: [
             {name: "Operator",value: "ethereum/" + window.ethereum.selectedAddress}, 
@@ -176,19 +173,10 @@ export default {
         this.balanceStack = balanceStack
       })
     },
-    async getGists () {
-      const octokit = new Octokit({
-        auth: this.pat,
-      })
-
-      const response = await octokit.request(`GET /gists/${this.gistId}`, {
-        gist_id: this.gistId,
-      })
-
-      this.gistOwnerId = response.data.history[0].user.id.toString()
-      console.log(this.gistOwnerId, typeof this.gistOwnerId)
-
-      this.payload = Buffer.from(JSON.stringify(response.data))
+    async getGistContent () {
+      const result = await axios.get(`https://api.github.com/gists/${this.gistId}`)
+      this.gistOwnerId = result.data.history[0].user.id.toString()
+      this.payload = Buffer.from(JSON.stringify(result.data))
     },
   },
   mounted() {
@@ -214,4 +202,3 @@ export default {
   },
 };
 </script>
-
