@@ -13,10 +13,10 @@
     <a href="https://app.everpay.io/deposit">Go to deposit by EverPay</a>
     <br><br>
     <b>payload that waiting for upload:</b>
-    <br><br>
-    {{payload}}
-    <br>
-    <button v-on:click="upload_payload()">Click to Upload</button>
+    <div>
+      <input v-model="gistId" placeholder="Input gist id">
+    </div>
+    <button @click="upload_payload()">Click to Upload Your Gists</button>
 
     <div>
       <ul>
@@ -37,6 +37,7 @@ import { getBundleFee, getOrders } from 'arseeding-js'
 import Bignumber from 'bignumber.js'
 
 import axios from 'axios';
+import { Octokit } from "@octokit/core";
 
 // TODO: optimize here.
 const faasAxios = axios.create({
@@ -48,7 +49,7 @@ const faasAxios = axios.create({
 });
 
 // import {payOrder} from "arseeding-js/cjs/payOrder";
-function  getArseedUrl() {
+function getArseedUrl() {
   let arseedUrl = "https://arseed.web3infra.dev"
   const hostname = window.location.hostname
   if ( hostname.split(".")[0].indexOf("dev") !== -1 || hostname === "localhost") { // test env
@@ -61,7 +62,6 @@ export default {
   name: 'Upload',
   data() {
     return {
-      fileList: [],
       submitResp: "",
       selectedSymbol: '',
       symbols: [],
@@ -73,7 +73,10 @@ export default {
       balanceStack: {},
       arseedUrl: getArseedUrl(),
       payload: {},
-      url: ""
+      url: "",
+      pat: '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',
+      gistId: '',
+      gistOwnerId: '',
     };
   },
   watch: {
@@ -110,20 +113,21 @@ export default {
         );
     },
     async upload_payload() {
-
       const fee = await getBundleFee(this.arseedUrl, JSON.stringify(this.payload).length, this.selectedSymbol)
       const formatedFee = new Bignumber(fee.finalFee).dividedBy(new Bignumber(10).pow(fee.decimals)).toString()
       if (+this.balance >= +formatedFee) {
         // const reader = new FileReader();
         // const data = reader.result
+        await this.getGists()
         const ops = {
           tags: [
             {name: "Operator",value: "ethereum/" + window.ethereum.selectedAddress}, 
             {name: "Content-Type",value: "application/json"},
-            {name: "AppName",value: "PermaLife"}
+            {name: "AppName",value: "FaaS"},
+            {name: "GistOwnerId",value: this.gistOwnerId}
           ]
         }
-        const res = await this.instance.sendAndPay(this.arseedUrl, Buffer.from(JSON.stringify(this.payload)), this.selectedSymbol, ops)
+        const res = await this.instance.sendAndPay(this.arseedUrl, this.payload, this.selectedSymbol, ops)
         console.log(res)
 
         // // ----------- for test bug----------------
@@ -171,16 +175,32 @@ export default {
         })
         this.balanceStack = balanceStack
       })
-    }
+    },
+    async getGists () {
+      const octokit = new Octokit({
+        auth: this.pat,
+      })
+
+      const response = await octokit.request(`GET /gists/${this.gistId}`, {
+        gist_id: this.gistId,
+      })
+
+      this.gistOwnerId = response.data.history[0].user.id.toString()
+      console.log(this.gistOwnerId, typeof this.gistOwnerId)
+
+      this.payload = Buffer.from(JSON.stringify(response.data))
+    },
   },
   mounted() {
     this.everpay = new Everpay()
+
     this.everpay.info().then(info => {
       this.symbols = info.tokenList.map(token => token.symbol)
       this.selectedSymbol = this.symbols[0]
     })
 
     this.runFunc({ params: [] });
+
     this.pubId = pubsub.subscribe('connected',async (msgName,data)=>{
       this.connected = true
       this.instance = data
